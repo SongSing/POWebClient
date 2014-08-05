@@ -118,7 +118,7 @@ var messageHandlers =
 		
 		if (data.channel === -1)
 		{
-			print(data.message, data.html);
+			print(timestamp() + " " + data.message, data.html);
 		}
 		else if (data.message.contains(":"))
 		{
@@ -134,12 +134,12 @@ var messageHandlers =
 			}
 			else
 			{
-				print(data.message, data.html);
+				print(timestamp() + " " + data.message, data.html);
 			}
 		}
 		else
 		{
-			print(data.message, data.html);
+			print(timestamp() + " " + data.message, data.html);
 		}
 		
 	},
