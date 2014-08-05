@@ -85,6 +85,7 @@ input[type="text"], input[class="color"], #color
 	padding-left:8px;
 	padding-right:8px;
 	width:160px;
+	box-sizing: border-box;
 }
 
 #page_serverList #color
@@ -97,6 +98,7 @@ input[type="text"], input[class="color"], #color
 	padding-left:8px;
 	padding-right:8px;
 	width:96px;
+	box-sizing: border-box;
 }
 
 #page_serverList #advancedConnection
