@@ -3,6 +3,7 @@ var allServers = {};
 var name = "";
 var color = "";
 var players = {};
+var namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
 
 var messageHandlers =
 {
@@ -130,7 +131,7 @@ var messageHandlers =
 				var color = player.color || "#000000";
 				var message = data.message.substr(data.message.indexOf(":") + 2);
 				
-				print("<span style='color:%1'>%2 <b>%3</b></span> %4".args(color, timestamp(), name, message), data.html);
+				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.html);
 			}
 			else
 			{
@@ -145,19 +146,17 @@ var messageHandlers =
 	},
 	"players": function(data)
 	{
-		if (players === {})
+		var updates = JSON.parse(data);
+		
+		for (var x in updates)
 		{
-			players = JSON.parse(data);
-		}
-		else
-		{
-			var updates = JSON.parse(data);
-			
-			for (var x in updates)
-			{
-				if (updates.hasOwnProperty(x))
+			if (updates.hasOwnProperty(x))
+			{				
+				players[x] = updates[x];
+				
+				if (!players[x].color)
 				{
-					players[x] = updates[x];
+					players[x].color = namecolorlist[parseInt(x) % namecolorlist.length];
 				}
 			}
 		}
