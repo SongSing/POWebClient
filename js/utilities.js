@@ -280,6 +280,11 @@ function timestamp()
 	return timestamp;
 }
 
+function scrollToBottom(e)
+{
+	e.scrollTop = e.scrollHeight;
+}
+
 function utf8_encode(argString) {
 	//	discuss at: http://phpjs.org/functions/utf8_encode/
 	// original by: Webtoolkit.info (http://www.webtoolkit.info/)
