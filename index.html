@@ -6,6 +6,7 @@
 		<script src="js/vex.js"></script>
 		<script src="js/vex.dialog.js"></script>
 		<script>vex.defaultOptions.className = 'vex-theme-os';</script>
+		<script src="js/jscolor.js"></script>
 		<script src="js/utilities.js"></script>
 		<script src="js/relay.js"></script>
 		<script src="js/script.js"></script>
@@ -21,6 +22,8 @@
 				$("#page_client").hide();
 				$("#connectButton").button();
 				$("#connectButton").click(connectToServer);
+				$("#sendChatButton").button();
+				$("#sendChatButton").click(sendLine);
 				connectToRegistry();
 			});
 		</script>
@@ -33,12 +36,17 @@
 				<div id="servers">
 					<i style="display:block; padding:8px;">Loading servers...</i>
 				</div>
-				<input type="text" id="name" value="Name"></input>
-				<input type="text" id="advancedConnection"></input>
+				<div id="serverDescription"></div>
+				<input type="text" id="name" value="Name" />
+				<input class="color {hash:true}" id="color" />
+				<input type="text" id="advancedConnection" />
 				<div id="connectButton">Connect</div>
 			</div>
 			<div id="page_client">
 				<div id="chat"></div>
+				<div id="players"></div>
+				<input id="chatInput" type="text" />
+				<div id="sendChatButton">Send</div>
 			</div>
 		</div>
 	</body>

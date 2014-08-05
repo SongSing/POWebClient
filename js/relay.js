@@ -15,7 +15,11 @@ var parsers =
 	"auth": function(data)
 	{
 		return "auth|" + data.hash;
-	}	
+	},
+	"chat": function(data)
+	{
+		return "chat|" + JSON.stringify(data);
+	}
 };
 
 function Relay(ip, openfn, messagefn, closefn, errorfn)

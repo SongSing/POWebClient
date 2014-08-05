@@ -245,13 +245,18 @@ function get(id)
 	return $(id).get(0);
 }
 
-function escapeHTML(ret)
+function escapeHTML(str) // from po
 {
-	return ret.replace(/&/g, "&amp;")
+	return str.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/\b((?:https?|ftp):\/\/\S+)/gi, "<a href='$1' target='_blank'>$1</a>")
 		.replace(/&amp;(?=[^\s<]*<\/a>)/g, "&"); /* Revert &amp;'s to &'s in URLs */
+}
+
+function escapeHTMLQuotes(str) // from po
+{
+	return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function storeVal(key, val)

@@ -7,13 +7,13 @@ html, body, #content
 	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 
-input[type="text"]
+input[type="text"], input[class="color"], #color
 {
 	border:1px solid #aaaaaa;
 	border-radius:5px;
 }
 
-#page_serverList
+#page_serverList, #page_client
 {
 	background:#EEEEFF;
 	position:absolute;
@@ -40,9 +40,23 @@ input[type="text"]
 	top:64px;
 	left:16px;
 	right:16px;
-	bottom:64px;
+	bottom:256px;
 	overflow:auto;
 	padding:0px;
+	background:white;
+}
+
+#page_serverList #serverDescription
+{
+	border:1px solid #aaaaaa;
+	border-radius:5px;
+	position:absolute;
+	left:16px;
+	right:16px;
+	bottom:56px;
+	height:172px;
+	overflow:auto;
+	padding:8px;
 	background:white;
 }
 
@@ -73,6 +87,18 @@ input[type="text"]
 	width:160px;
 }
 
+#page_serverList #color
+{
+	position:absolute;
+	bottom:16px;
+	left:184px;
+	height:32px;
+	font-size:16px;
+	padding-left:8px;
+	padding-right:8px;
+	width:96px;
+}
+
 #page_serverList #advancedConnection
 {
 	height:32px;
@@ -81,10 +107,10 @@ input[type="text"]
 	padding-right:8px;
 	position:absolute;
 	bottom:16px;
-	left:192px;
+	left:288px;
 	box-sizing: border-box;
-    width: -webkit-calc(100% - 356px);
-    width: calc(100% - 356px);
+    width: -webkit-calc(100% - 340px);
+    width: calc(100% - 444px);
 }
 
 #page_serverList #connectButton
@@ -101,9 +127,55 @@ input[type="text"]
 #page_client #chat
 {
 	position:absolute;
-	top:0px;
-	right:0px;
-	bottom:0px;
-	left:0px;
+	top:16px;
+	left:16px;
+	right:320px;
+	bottom:60px;
+	border:1px solid #aaaaaa;
+	border-radius:5px;
+	border-top-right-radius:0px;
+	border-bottom-right-radius:0px;
+	padding:8px;
+	overflow-y:auto;
+	background:white;
 }
 
+#page_client #players
+{
+	position:absolute;
+	top:16px;
+	right:16px;
+	width:287px;
+	bottom:16px;
+	border:1px solid #aaaaaa;
+	border-radius:8px;
+	border-top-left-radius:0px;
+	padding:8px;
+	overflow-y:auto;
+	background:white;
+}
+
+#page_client #chatInput
+{
+	position: absolute;
+	bottom: 16px;
+	height: 32px;
+	font-size: 16px;
+	left: 16px;
+	box-sizing: border-box;
+	width: -webkit-calc(100% - 340px);
+	width: calc(100% - 460px);
+	padding-left:8px;
+	padding-right:8px;
+}
+
+#page_client #sendChatButton
+{
+	position: absolute;
+	bottom: 16px;
+	right: 332px;
+	width: 96px;
+	height: 31px;
+	font-size:16px;
+	font-weight:bold;
+}

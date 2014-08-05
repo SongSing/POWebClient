@@ -61,11 +61,18 @@ var messageHandlers =
 		for (var i = 0; i < listed.length; i++)
 		{
 			var server = listed[i];
-			var fn = '$("#advancedConnection").get(0).value = "' + server.name + ' - ' + server.ip + ':' + server.port + '";';
-			
-			$("#servers").append("<div class='serverItem' onclick='" + fn + "'>"
-				+ escapeHTML(server.name) + "<span style='float:right; color:inherit;'>" + server.num + " users online</span></div>");
+				
+			$("#servers").append("<div class='serverItem' id='serverItem" + i + "'>"
+				+ escapeHTML(server.name) + "<span style='float:right; color:inherit;'>" + server.num + " user(s) online</span></div>");
 		}
+		
+		$(".serverItem").click(function()
+		{
+			var server = listed[this.id.substr(10)];
+			console.log(server.description);
+			$("#advancedConnection").get(0).value = server.name + " - " + server.ip + ":" + server.port;
+			$("#serverDescription").get(0).innerHTML = server.description;
+		});
 	},
 	"connected": function(data)
 	{
@@ -158,6 +165,15 @@ var messageHandlers =
 				{
 					players[x].color = namecolorlist[parseInt(x) % namecolorlist.length];
 				}
+				
+				if (!document.getElementById("playerItem" + x))
+				{
+					$("#players").append("<div id='playerItem" + x + "'><span style='color:" + players[x].color + "'><b>" + players[x].name + "</b></span></div>");
+				}
+				else
+				{
+					$("#playerItem" + x).get(0).innerHTML = "<span style='color:" + players[x].color + "'><b>" + players[x].name + "</b></span>";
+				}
 			}
 		}
 	}
@@ -197,7 +213,7 @@ function connectToRegistry()
 function connectToServer()
 {
 	name = $("#name").get(0).value;
-	color = "#FF0000";
+	color = $("#color").get(0).value;
 	
 	var ip = $("#advancedConnection").get(0).value;
 	ip = ip.substr(ip.lastIndexOf(" - ") + 3);
@@ -211,6 +227,18 @@ function print(msg, html)
 	
 	$("#chat").append("<div>" + (html ? msg : escapeHTML(msg)) + "</div>");
 	scrollToBottom($("#chat").get(0));
+}
+
+function sendLine()
+{
+	var chan = 0;
+	var toSend = get("#chatInput").value;
+	
+	if (toSend)
+	{
+		get("#chatInput").value = "";
+		relay.send("chat", { "channel": chan, "message": toSend });
+	}
 }
 
 function playerByName(name)
