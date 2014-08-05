@@ -116,7 +116,7 @@ var messageHandlers =
 	{
 		data = JSON.parse(data);
 		
-		if ((data.channel === -1 && params.message[0] === "~"))
+		if (data.channel === -1)
 		{
 			print(data.message, data.html);
 		}
@@ -166,7 +166,7 @@ var messageHandlers =
 
 function handleMessage(msg)
 {
-	var received = msg.data;
+	var received = msg.data.toString();
 	console.log("received: " + received);
 	var command = received.split("|")[0];
 	var data = (received.contains("|") ? received.substr(received.indexOf("|") + 1) : undefined);
@@ -211,6 +211,7 @@ function print(msg, html)
 	html = html || true;
 	
 	$("#chat").append("<div>" + (html ? msg : escapeHTML(msg)) + "</div>");
+	scrollToBottom($("#chat").get(0));
 }
 
 function playerByName(name)
