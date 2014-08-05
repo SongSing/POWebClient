@@ -11,7 +11,11 @@ var parsers =
 	"registry": function(data)
 	{
 		return "registry";
-	}
+	},
+	"auth": function(data)
+	{
+		return "auth|" + data.hash;
+	}	
 };
 
 function Relay(ip, openfn, messagefn, closefn, errorfn)
@@ -39,4 +43,9 @@ Relay.prototype.sendRaw = function(raw)
 Relay.prototype.command = Relay.prototype.send = function(cmd, data)
 {
 	this.sendRaw(parsers[cmd](data));
+};
+
+Relay.prototype.close = function()
+{
+	this.socket.close();
 };
