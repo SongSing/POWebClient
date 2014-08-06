@@ -19,6 +19,14 @@ var parsers =
 	"chat": function(data)
 	{
 		return "chat|" + JSON.stringify(data);
+	},
+	"join": function(data)
+	{
+		return "join|" + data.toString();
+	},
+	"leave": function(data)
+	{
+		return "leave|" + data.toString();
 	}
 };
 

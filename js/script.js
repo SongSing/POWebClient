@@ -1,9 +1,14 @@
 var relay;
 var allServers = {};
-var name = "";
-var color = "";
 var players = {};
 var namecolorlist = ['#5811b1', '#399bcd', '#0474bb', '#f8760d', '#a00c9e', '#0d762b', '#5f4c00', '#9a4f6d', '#d0990f', '#1b1390', '#028678', '#0324b1'];
+
+var myInfo = {};
+var channels = {};
+var channelPlayers = {};
+var tiers = {};
+var myChannels = {};
+var channelPlayers = {};
 
 var messageHandlers =
 {
@@ -63,7 +68,7 @@ var messageHandlers =
 			var server = listed[i];
 				
 			$("#servers").append("<div class='serverItem' id='serverItem" + i + "'>"
-				+ escapeHTML(server.name) + "<span style='float:right; color:inherit;'>" + server.num + " user(s) online</span></div>");
+				+ escapeHTML(server.name) + "<span style='float:right; color:inherit;'>" + server.num + (server.hasOwnProperty("max") ? "/" + server.max : "") + " user(s) online</span></div>");
 		}
 		
 		$(".serverItem").click(function()
@@ -83,8 +88,8 @@ var messageHandlers =
 		login.autojoin = getVal("autojoinChannels", []);
 		login.ladder = getVal("ladderEnabled", true);
 		login.idle = getVal("idle", false);
-		login.color = color;
-		login.name = name;
+		login.color = myInfo.color;
+		login.name = myInfo.name;
 		
 		relay.send("login", login);
 	},
@@ -124,11 +129,7 @@ var messageHandlers =
 	{
 		data = JSON.parse(data);
 		
-		if (data.channel === -1)
-		{
-			print(timestamp() + " " + data.message, data.html);
-		}
-		else if (data.message.contains(":"))
+		if (data.message.contains(":"))
 		{
 			var player = playerByName(data.message.split(":")[0]);
 			
@@ -138,16 +139,41 @@ var messageHandlers =
 				var color = player.color || "#000000";
 				var message = data.message.substr(data.message.indexOf(":") + 2);
 				
-				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.html);
+				if (!data.html)
+					message = escapeHTML(message);
+				
+				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+			}
+			else if (data.message.startsWith("\u00b1") || data.message.startsWith("+"))
+			{
+				var name = data.message.split(":")[0];
+				var color = "#318739";
+				var message = data.message.substr(data.message.indexOf(":") + 2);
+				
+				if (!data.html)
+					message = escapeHTML(message);
+				
+				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+			}
+			else if (data.message.startsWith("Welcome Message: "))
+			{
+				var name = data.message.split(":")[0];
+				var color = "blue";
+				var message = data.message.substr(data.message.indexOf(":") + 2);
+				
+				if (!data.html)
+					message = escapeHTML(message);
+				
+				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
 			}
 			else
 			{
-				print(timestamp() + " " + data.message, data.html);
+				print(timestamp() + " " + (data.html ? data.message : escapeHTML(data.message)), data.channel);
 			}
 		}
 		else
 		{
-			print(timestamp() + " " + data.message, data.html);
+			print(timestamp() + " " + data.message, data.html, data.channel);
 		}
 		
 	},
@@ -165,16 +191,117 @@ var messageHandlers =
 				{
 					players[x].color = namecolorlist[parseInt(x) % namecolorlist.length];
 				}
-				
-				if (!document.getElementById("playerItem" + x))
-				{
-					$("#players").append("<div id='playerItem" + x + "'><span style='color:" + players[x].color + "'><b>" + players[x].name + "</b></span></div>");
-				}
-				else
-				{
-					$("#playerItem" + x).get(0).innerHTML = "<span style='color:" + players[x].color + "'><b>" + players[x].name + "</b></span>";
-				}
 			}
+		}
+	},
+	"login": function(data)
+	{
+		data = JSON.parse(data);
+		
+		myInfo = data.info;
+		myInfo.id = data.id;
+	},
+	"channels": function(data)
+	{
+		data = JSON.parse(data);
+		
+		channels = data;
+		var list = $("#channelList");
+		
+		for (var channel in channels)
+		{
+			if (channels.hasOwnProperty(channel))
+			{
+				var div = document.createElement("div");
+				div.id = "channelItem" + channel;
+				div.className = "channelItem";
+				var a = document.createElement("span");
+				a.innerHTML = channels[channel];
+				a.id = "channelItemText" + channel;
+				console.log(a.id);
+				a.name = channels[channel];
+				
+				$(a).click(function() { joinChannel(this.name); });
+				
+				$(div).append(a);
+				list.append(div);
+			}
+		}
+	},
+	"tiers": function(data)
+	{
+		data = JSON.parse(data);
+		
+		tiers = data;
+	},
+	"newchannel": function(data)
+	{
+		data = JSON.parse(data);
+		channels[data.id] = data.name;
+		var channel = data.id;
+		
+		var list = $("#channelList");
+		var div = document.createElement("div");
+		div.id = "channelItem" + channel;
+		div.className = "channelItem";
+		var a = document.createElement("span");
+		a.innerHTML = channels[channel];
+		a.id = "channelItemText" + channel;
+		console.log(a.id);
+		a.name = channels[channel];
+		
+		$(a).click(function() { joinChannel(this.name); });
+		
+		$(div).append(a);
+		list.append(div);
+	},
+	"removechannel": function(data)
+	{
+		delete channels[data];
+		
+		get("#channelItem" + data).delete();
+	},
+	"channelplayers": function(data)
+	{
+		data = JSON.parse(data);
+		
+		var c = data.channel;
+		var p = data.players;
+		
+		if (!myChannels[c])
+		{
+			channelPlayers[c] = p;
+		}
+		else
+		{
+			for (var i = 0; i < p.length; i++)
+			{
+				myChannels[c].addPlayer(p[i]);
+			}
+		}
+	},
+	"join": function(data)
+	{
+		var channel = data.split("|")[0];
+		var user = data.split("|")[1];
+		
+		if (user == myInfo.id)
+		{
+			addChannel(channel);
+		}
+		
+		myChannels[channel].addPlayer(user);
+	},
+	"leave": function(data)
+	{
+		var channel = data.split("|")[0];
+		var user = data.split("|")[1];
+		
+		myChannels[channel].removePlayer(user);
+		
+		if (user == myInfo.id)
+		{
+			removeChannel(channel);
 		}
 	}
 };
@@ -212,8 +339,8 @@ function connectToRegistry()
 
 function connectToServer()
 {
-	name = $("#name").get(0).value;
-	color = $("#color").get(0).value;
+	myInfo.name = $("#name").get(0).value;
+	myInfo.color = $("#color").get(0).value;
 	
 	var ip = $("#advancedConnection").get(0).value;
 	ip = ip.substr(ip.lastIndexOf(" - ") + 3);
@@ -221,23 +348,92 @@ function connectToServer()
 	relay.send("connect", ip);
 }
 
-function print(msg, html)
+function showAbout()
 {
-	html = html || true;
-	
-	$("#chat").append("<div>" + (html ? msg : escapeHTML(msg)) + "</div>");
-	scrollToBottom($("#chat").get(0));
+	var about = "Pok&eacute;mon Online Webclient<br />\
+		Built by SongSing<br />It's not done yet :)<br />You can help if you want, just ask<br /><br />\
+		Credits:<br />\
+		jQuery &amp; jQuery UI - Good libraries<br />\
+		vex - Good for dialogs (like this one!)<br />\
+		jsColor - Lightweight colour picker thing<br />\
+		PO - Made registry and servers, and I took a couple of functions and ideas from their webclient<br />\
+		pup - My hero and inspiration<br /><br />\
+		&copy; 2014 SongSing";
+		
+	vex.dialog.alert(about);
 }
 
-function sendLine()
+function print(msg, channel)
 {
-	var chan = 0;
-	var toSend = get("#chatInput").value;
-	
-	if (toSend)
+	if (channel === undefined || channel === -1)
 	{
-		get("#chatInput").value = "";
-		relay.send("chat", { "channel": chan, "message": toSend });
+		for (var c in myChannels)
+		{
+			if (myChannels.hasOwnProperty(c))
+			{
+				print(msg, c);
+			}
+		}
+	}
+	else if (myChannels.hasOwnProperty(channel))
+	{		
+		myChannels[channel].print(msg);
+	}
+}
+
+function addChannel(channel)
+{
+	var c = new Channel(channel);
+	c.container.id = "channel" + channel;
+	
+	var li = document.createElement("li");
+	li.id = "channelTab" + channel;
+	
+	var close = "<img src='css/images/close.png' style='width:16px; height:16px; cursor:pointer;' onclick='relay.send(\"leave\", "
+		+ channel + "); removeChannel(" + channel + ");'></img>";
+	
+	li.innerHTML = "<a href='#channel" + channel + "'>" + channels[channel] + "&nbsp;&nbsp;" + close + "</a>";
+	
+	$("#channelTabs").append(li);
+	$("#channelsContainer").append(c.container);
+	
+	myChannels[channel] = c;
+	
+	if (channelPlayers[channel])
+	{
+		var p = channelPlayers[channel];
+		for (var i = 0; i < p.length; i++)
+		{
+			myChannels[channel].addPlayer(p[i]);
+		}
+	}
+	
+	$("#channelsContainer").tabs("refresh");
+	$("#channelsContainer").tabs("option", "active", $('#channelsContainer >ul >li').size() - 1);
+}
+
+function removeChannel(channel)
+{
+	if (myChannels.hasOwnProperty(channel) || get("#channelTab" + channel))
+	{
+		myChannels[channel].container.delete();
+		get("#channelTab" + channel).delete();
+		delete myChannels[channel];
+		
+		$("#channelsContainer").tabs("refresh");
+		$("#channelsContainer").tabs("option", "active", $('#channelsContainer >ul >li').size() - 1);
+	}
+}
+
+function joinChannel(name)
+{
+	if (myChannels.hasOwnProperty(channelId(name)))
+	{
+		$("#channelsContainer").tabs("option", "active", channelId(name));
+	}
+	else
+	{
+		relay.send("join", name);
 	}
 }
 
@@ -253,4 +449,17 @@ function playerByName(name)
 	}
 	
 	return undefined;
+}
+
+function channelId(name)
+{
+	for (var channel in channels)
+	{
+		if (channels.hasOwnProperty(channel) && cmp(channels[channel], name))
+		{
+			return parseInt(channel);
+		}
+	}
+	
+	return -1;
 }

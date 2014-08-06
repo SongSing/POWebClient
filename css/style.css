@@ -32,6 +32,13 @@ input[type="text"], input[class="color"], #color
 	font-weight:bold;
 }
 
+#page_serverList #aboutButton
+{
+	position:absolute;
+	top:16px;
+	right:16px;
+}
+
 #page_serverList #servers
 {
 	border:1px solid #aaaaaa;
@@ -126,7 +133,7 @@ input[type="text"], input[class="color"], #color
 	font-weight:bold;
 }
 
-#page_client #chat
+#page_client .channelChat
 {
 	position:absolute;
 	top:16px;
@@ -140,9 +147,16 @@ input[type="text"], input[class="color"], #color
 	padding:8px;
 	overflow-y:auto;
 	background:white;
+	font-size:14px;
 }
 
-#page_client #players
+a
+{
+	color:blue;
+	text-decoration:underline;
+}
+
+#page_client .channelPlayers
 {
 	position:absolute;
 	top:16px;
@@ -157,7 +171,7 @@ input[type="text"], input[class="color"], #color
 	background:white;
 }
 
-#page_client #chatInput
+#page_client .channelInput
 {
 	position: absolute;
 	bottom: 16px;
@@ -171,7 +185,7 @@ input[type="text"], input[class="color"], #color
 	padding-right:8px;
 }
 
-#page_client #sendChatButton
+#page_client .channelSendButton
 {
 	position: absolute;
 	bottom: 16px;
@@ -180,4 +194,45 @@ input[type="text"], input[class="color"], #color
 	height: 31px;
 	font-size:16px;
 	font-weight:bold;
+}
+
+#page_client .channelContainer
+{
+	position:absolute;
+	top:48px;
+	left:0px;
+	right:0px;
+	bottom:0px;
+}
+
+#page_client #channelsContainer
+{
+	position:absolute;
+	top:0px;
+	left:0px;
+	right:256px;
+	bottom:0px;
+	border-radius:0px;
+}
+
+#page_client #channelList
+{
+	position:absolute;
+	top:0px;
+	right:0px;
+	width:256px;
+	bottom:0px;
+	box-sizing:border-box;
+	background:white;
+	overflow:auto;
+	padding:8px;
+	font-size:16px;
+}
+
+#page_client #channelList .channelItem span
+{
+	text-decoration:none;
+	color:black;
+	font-weight:bold;
+	cursor:pointer;
 }

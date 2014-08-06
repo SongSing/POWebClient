@@ -250,7 +250,7 @@ function escapeHTML(str) // from po
 	return str.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
-		.replace(/\b((?:https?|ftp):\/\/\S+)/gi, "<a href='$1' target='_blank'>$1</a>")
+		.replace(/([a-zA-Z]+:\/\/|www\.)([^\s]+)/ig, "<a href='$1$2' target='_blank' style='color:blue; text-decoration:underline;'>$1$2</a>")
 		.replace(/&amp;(?=[^\s<]*<\/a>)/g, "&"); /* Revert &amp;'s to &'s in URLs */
 }
 
@@ -268,6 +268,29 @@ function getVal(key, def)
 {
 	return localStorage.getItem(key) || def;
 }
+
+Element.prototype.delete = function()
+{
+    this.parentElement.removeChild(this);
+};
+
+Element.prototype.toString = function()
+{
+	var x = document.createElement("div");
+	$(x).append(this);
+	return x.innerHTML;
+};
+
+NodeList.prototype.delete = HTMLCollection.prototype.delete = function()
+{
+    for (var i = 0, len = this.length; i < len; i++)
+	{
+        if (this[i] && this[i].parentElement)
+		{
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+};
 
 function timestamp()
 {
