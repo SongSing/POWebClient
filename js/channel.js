@@ -59,7 +59,9 @@ function Channel(id)
 	
 	this.print = function(msg)
 	{
-		$(_this.chat).append("<div>" + msg + "</div>");
+		var div = document.createElement("div");
+		div.innerHTML = msg;
+		$(_this.chat).append(div);
 		scrollToBottom(_this.chat);
 	};
 	

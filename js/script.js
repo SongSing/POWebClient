@@ -128,6 +128,7 @@ var messageHandlers =
 	"chat": function(data)
 	{
 		data = JSON.parse(data);
+		data.message = data.message.replace(/\<timestamp([^\>]+)\>/gi, timestamp());
 		
 		if (data.message.contains(":"))
 		{
@@ -166,14 +167,25 @@ var messageHandlers =
 				
 				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
 			}
+			else if (data.message.startsWith("~~Server~~"))
+			{
+				var name = data.message.split(":")[0];
+				var color = "gold";
+				var message = data.message.substr(data.message.indexOf(":") + 2);
+				
+				if (!data.html)
+					message = escapeHTML(message);
+				
+				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+			}
 			else
 			{
-				print(timestamp() + " " + (data.html ? data.message : escapeHTML(data.message)), data.channel);
+				print((data.html ? data.message : timestamp() + " " + escapeHTML(data.message)), data.channel);
 			}
 		}
 		else
 		{
-			print(timestamp() + " " + data.message, data.html, data.channel);
+			print((data.html ? data.message : timestamp() + " " + escapeHTML(data.message)), data.channel);
 		}
 		
 	},
