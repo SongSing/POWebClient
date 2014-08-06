@@ -67,10 +67,24 @@ function Channel(id)
 	
 	this.addPlayer = function(id)
 	{
-		this.playerArray.push(id);
 		var player = players[id];
-		$(_this.players).append("<div id='player%3channel%4'><span style='color:%1;'><b>%2</b></span></div>".args(player.color, player.name, id, _this.id));
-		_this.print(timestamp() + " " + player.name + " joined the channel.");
+		
+		if (player === undefined)
+		{
+			console.log("Tried to add undefined player with id %1 to channel %2".args(id, _this.id));
+			return;
+		}
+		
+		if (!_this.playerArray.contains(id))
+		{
+			_this.playerArray.push(id);
+			_this.print(timestamp() + " " + player.name + " joined the channel.");
+		}
+		
+		if (get("#player" + id + "channel" + _this.id) === undefined)
+		{
+			$(_this.players).append("<div id='player%3channel%4'><span style='color:%1;'><b>%2</b></span></div>".args(player.color, player.name, id, _this.id));
+		}
 	};
 	
 	this.removePlayer = function(id)

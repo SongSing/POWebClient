@@ -74,7 +74,6 @@ var messageHandlers =
 		$(".serverItem").click(function()
 		{
 			var server = listed[this.id.substr(10)];
-			console.log(server.description);
 			$("#advancedConnection").get(0).value = server.name + " - " + server.ip + ":" + server.port;
 			$("#serverDescription").get(0).innerHTML = server.description;
 		});
@@ -192,6 +191,7 @@ var messageHandlers =
 	"players": function(data)
 	{
 		var updates = JSON.parse(data);
+		var first = players === {};
 		
 		for (var x in updates)
 		{
@@ -202,6 +202,17 @@ var messageHandlers =
 				if (!players[x].color)
 				{
 					players[x].color = namecolorlist[parseInt(x) % namecolorlist.length];
+				}
+			}
+		}
+		
+		if (first)
+		{
+			for (var x in myChannels)
+			{
+				if(myChannels.hasOwnProperty(x))
+				{
+					myChannels[x].addPlayer(myInfo.id);
 				}
 			}
 		}
@@ -230,7 +241,6 @@ var messageHandlers =
 				var a = document.createElement("span");
 				a.innerHTML = channels[channel];
 				a.id = "channelItemText" + channel;
-				console.log(a.id);
 				a.name = channels[channel];
 				
 				$(a).click(function() { joinChannel(this.name); });
@@ -259,7 +269,6 @@ var messageHandlers =
 		var a = document.createElement("span");
 		a.innerHTML = channels[channel];
 		a.id = "channelItemText" + channel;
-		console.log(a.id);
 		a.name = channels[channel];
 		
 		$(a).click(function() { joinChannel(this.name); });
@@ -302,18 +311,23 @@ var messageHandlers =
 			addChannel(channel);
 		}
 		
-		myChannels[channel].addPlayer(user);
+		if (players.hasOwnProperty(user))
+		{
+			myChannels[channel].addPlayer(user);
+		}
 	},
 	"leave": function(data)
 	{
 		var channel = data.split("|")[0];
 		var user = data.split("|")[1];
 		
-		myChannels[channel].removePlayer(user);
-		
 		if (user == myInfo.id)
 		{
 			removeChannel(channel);
+		}
+		else if (myChannels.hasOwnProperty(channel))
+		{
+			myChannels[channel].removePlayer(user);
 		}
 	}
 };
@@ -321,7 +335,7 @@ var messageHandlers =
 function handleMessage(msg)
 {
 	var received = msg.data.toString();
-	console.log("received: " + received);
+	//console.log("received: " + received);
 	var command = received.split("|")[0];
 	var data = (received.contains("|") ? received.substr(received.indexOf("|") + 1) : undefined);
 	
@@ -355,7 +369,7 @@ function connectToServer()
 	myInfo.color = $("#color").get(0).value;
 	
 	var ip = $("#advancedConnection").get(0).value;
-	ip = ip.substr(ip.lastIndexOf(" - ") + 3);
+	ip = (ip.contains(" - ") ? ip.substr(ip.lastIndexOf(" - ") + 3) : ip);
 	
 	relay.send("connect", ip);
 }
@@ -402,7 +416,7 @@ function addChannel(channel)
 	li.id = "channelTab" + channel;
 	
 	var close = "<img src='css/images/close.png' style='width:16px; height:16px; cursor:pointer;' onclick='relay.send(\"leave\", "
-		+ channel + "); removeChannel(" + channel + ");'></img>";
+		+ channel + "); removeChannel(" + channel + ");' onmouseover='this.src=\"css/images/close-hover.png\"' onmouseout='this.src=\"css/images/close.png\"'></img>";
 	
 	li.innerHTML = "<a href='#channel" + channel + "'>" + channels[channel] + "&nbsp;&nbsp;" + close + "</a>";
 	
@@ -426,15 +440,28 @@ function addChannel(channel)
 
 function removeChannel(channel)
 {
-	if (myChannels.hasOwnProperty(channel) || get("#channelTab" + channel))
-	{
-		myChannels[channel].container.delete();
-		get("#channelTab" + channel).delete();
-		delete myChannels[channel];
+	var index = $("#channelsContainer").tabs("option", "active");
+	if (get("#channelTab" + channel) !== undefined)
+	{	
+		var index = $("#channelsContainer a[href='#channelTab" + channel + "']").parent().index();
+		
+		get("#channelTab" + channel).remove();
+		myChannels[channel].container.remove();
 		
 		$("#channelsContainer").tabs("refresh");
-		$("#channelsContainer").tabs("option", "active", $('#channelsContainer >ul >li').size() - 1);
 	}
+	
+	if (myChannels.hasOwnProperty(channel))
+	{
+		delete myChannels[channel];
+	}
+	
+	// idk why it has to be like this, removing tabs should not be this difficult.
+	
+	if (index >= $('#channelsContainer >ul >li').size())
+		index--;
+	
+	$("#channelsContainer").tabs("option", "active", index);
 }
 
 function joinChannel(name)
