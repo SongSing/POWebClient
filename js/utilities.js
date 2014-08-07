@@ -259,6 +259,11 @@ function escapeHTMLQuotes(str) // from po
 	return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function fixPictures(str)
+{
+	return str;
+}
+
 function storeVal(key, val)
 {
 	localStorage.setItem(key, val);

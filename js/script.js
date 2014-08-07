@@ -9,6 +9,7 @@ var channelPlayers = {};
 var tiers = {};
 var myChannels = {};
 var channelPlayers = {};
+var channelTabs;
 
 var messageHandlers =
 {
@@ -415,13 +416,11 @@ function addChannel(channel)
 	var li = document.createElement("li");
 	li.id = "channelTab" + channel;
 	
-	var close = "<img src='css/images/close.png' style='width:16px; height:16px; cursor:pointer;' onclick='relay.send(\"leave\", "
-		+ channel + "); removeChannel(" + channel + ");' onmouseover='this.src=\"css/images/close-hover.png\"' onmouseout='this.src=\"css/images/close.png\"'></img>";
-	
-	li.innerHTML = "<a href='#channel" + channel + "'>" + channels[channel] + "&nbsp;&nbsp;" + close + "</a>";
-	
-	$("#channelTabs").append(li);
-	$("#channelsContainer").append(c.container);
+	channelTabs.addTab(channel, channels[channel], c.container, function()
+	{
+		relay.send("leave", channel);
+		removeChannel(channel);
+	});
 	
 	myChannels[channel] = c;
 	
@@ -433,42 +432,19 @@ function addChannel(channel)
 			myChannels[channel].addPlayer(p[i]);
 		}
 	}
-	
-	$("#channelsContainer").tabs("refresh");
-	$("#channelsContainer").tabs("option", "active", $('#channelsContainer >ul >li').size() - 1);
 }
 
 function removeChannel(channel)
 {
-	var index = $("#channelsContainer").tabs("option", "active");
-	if (get("#channelTab" + channel) !== undefined)
-	{	
-		var index = $("#channelsContainer a[href='#channelTab" + channel + "']").parent().index();
-		
-		get("#channelTab" + channel).remove();
-		myChannels[channel].container.remove();
-		
-		$("#channelsContainer").tabs("refresh");
-	}
-	
-	if (myChannels.hasOwnProperty(channel))
-	{
-		delete myChannels[channel];
-	}
-	
-	// idk why it has to be like this, removing tabs should not be this difficult.
-	
-	if (index >= $('#channelsContainer >ul >li').size())
-		index--;
-	
-	$("#channelsContainer").tabs("option", "active", index);
+	channelTabs.removeTab(channel);
+	delete myChannels[channel];
 }
 
 function joinChannel(name)
 {
 	if (myChannels.hasOwnProperty(channelId(name)))
 	{
-		$("#channelsContainer").tabs("option", "active", channelId(name));
+		channelTabs.switchToTab(channelId(name));
 	}
 	else
 	{
