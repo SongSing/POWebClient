@@ -128,64 +128,50 @@ var messageHandlers =
 	"chat": function(data)
 	{
 		data = JSON.parse(data);
-		data.message = data.message.replace(/\<timestamp([^\>]+)\>/gi, timestamp());
+		data.message = data.message.replace(/\<timestamp([^\>]+)\>/gi, timestamp() + " ");
 		
-		if (data.message.contains(":"))
+		if (data.message.contains(": ") && !data.html)
 		{
-			var player = playerByName(data.message.split(":")[0]);
+			var name = data.message.split(": ")[0];
+			var message = data.message.substr(data.message.indexOf(": ") + 2);
+			var toPrint = "";
 			
-			if (player)
+			if (name === "Welcome Message")
 			{
-				var name = player.name;
-				var color = player.color || "#000000";
-				var message = data.message.substr(data.message.indexOf(":") + 2);
-				
-				if (!data.html)
-					message = escapeHTML(message);
-				
-				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+				toPrint = "<span class='chat-welcome'>%1 <b>%2:</b></span> %3".args(timestamp(), name, message);
 			}
-			else if (data.message.startsWith("\u00b1") || data.message.startsWith("+"))
+			else if (name === "~~Server~~")
 			{
-				var name = data.message.split(":")[0];
-				var color = "#318739";
-				var message = data.message.substr(data.message.indexOf(":") + 2);
-				
-				if (!data.html)
-					message = escapeHTML(message);
-				
-				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+				toPrint = "<span class='chat-server'>%1 <b>%2:</b></span> %3".args(timestamp(), name, message);
 			}
-			else if (data.message.startsWith("Welcome Message: "))
+			else if (playerId(name) === -1)
 			{
-				var name = data.message.split(":")[0];
-				var color = "blue";
-				var message = data.message.substr(data.message.indexOf(":") + 2);
-				
-				if (!data.html)
-					message = escapeHTML(message);
-				
-				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
-			}
-			else if (data.message.startsWith("~~Server~~"))
-			{
-				var name = data.message.split(":")[0];
-				var color = "gold";
-				var message = data.message.substr(data.message.indexOf(":") + 2);
-				
-				if (!data.html)
-					message = escapeHTML(message);
-				
-				print("<span style='color:%1'>%2 <b>%3:</b></span> %4".args(color, timestamp(), name, message), data.channel);
+				toPrint = "<span class='chat-script'>%1 <b>%2:</b></span> %3".args(timestamp(), name, message);
 			}
 			else
 			{
-				print((data.html ? data.message : timestamp() + " " + escapeHTML(data.message)), data.channel);
+				toPrint = "<span class='chat-player' style='color:%4;'>%1 <b>%2:</b></span> %3".args(timestamp(), name, message, playerByName(name).color);
 			}
+			
+			print(toPrint, data.channel);
 		}
 		else
 		{
-			print((data.html ? data.message : timestamp() + " " + escapeHTML(data.message)), data.channel);
+			var before = "";
+			var after = "";
+			
+			if (data.message.startsWith("***"))
+			{
+				before = "<span style='color:#FF00FF'>";
+				after = "</span>";
+			}
+			else if (data.message.startsWith("\u00BB\u00BB\u00BB"))
+			{
+				before = "<span style='color:#318739'>";
+				after = "</span>";
+			}
+			
+			print(before + (data.html ? data.message : timestamp() + " " + escapeHTML(data.message)) + after, data.channel);
 		}
 		
 	},
@@ -229,25 +215,11 @@ var messageHandlers =
 	{
 		data = JSON.parse(data);
 		
-		channels = data;
-		var list = $("#channelList");
-		
-		for (var channel in channels)
+		for (var channel in data)
 		{
-			if (channels.hasOwnProperty(channel))
+			if (data.hasOwnProperty(channel))
 			{
-				var div = document.createElement("div");
-				div.id = "channelItem" + channel;
-				div.className = "channelItem";
-				var a = document.createElement("span");
-				a.innerHTML = channels[channel];
-				a.id = "channelItemText" + channel;
-				a.name = channels[channel];
-				
-				$(a).click(function() { joinChannel(this.name); });
-				
-				$(div).append(a);
-				list.append(div);
+				createChannel(data[channel], channel);
 			}
 		}
 	},
@@ -260,22 +232,7 @@ var messageHandlers =
 	"newchannel": function(data)
 	{
 		data = JSON.parse(data);
-		channels[data.id] = data.name;
-		var channel = data.id;
-		
-		var list = $("#channelList");
-		var div = document.createElement("div");
-		div.id = "channelItem" + channel;
-		div.className = "channelItem";
-		var a = document.createElement("span");
-		a.innerHTML = channels[channel];
-		a.id = "channelItemText" + channel;
-		a.name = channels[channel];
-		
-		$(a).click(function() { joinChannel(this.name); });
-		
-		$(div).append(a);
-		list.append(div);
+		createChannel(data.name, data.id);
 	},
 	"removechannel": function(data)
 	{
@@ -452,18 +409,76 @@ function joinChannel(name)
 	}
 }
 
-function playerByName(name)
+function createChannel(name, id)
+{
+	channels[id] = name;
+	var channel = id;
+	
+	var list = $("#channelList");
+	
+	var div = document.createElement("div");
+	div.id = "channelItem" + channel;
+	div.className = "channelItem";
+	var a = document.createElement("span");
+	a.innerHTML = channels[channel];
+	a.id = "channelItemText" + channel;
+	a.name = channels[channel];
+	
+	$(a).click(function() { joinChannel(this.name); });
+	
+	$(div).append(a);
+	
+	if (list.children().length > 0)
+	{
+		var names = [];
+		
+		for (var x in channels)
+		{
+			if (channels.hasOwnProperty(x))
+			{
+				names.push(channels[x]);
+			}
+		}
+		
+		names.sort(function(a, b)
+		{
+			return a.localeCompare(b);
+		});
+		
+		var index = names.indexOf(name);
+		
+		if (index === 0)
+		{
+			list.prepend(div);
+		}
+		else
+		{
+			$("#channelItem" + channelId(names[index - 1])).after(div);
+		}
+	}
+	else
+	{
+		list.append(div);
+	}
+}
+
+function playerId(name)
 {
 	for (var player in players)
 	{
 		if (players.hasOwnProperty(player))
 		{
 			if (cmp(players[player].name, name))
-				return players[player];
+				return player;
 		}
 	}
 	
-	return undefined;
+	return -1;
+}
+
+function playerByName(name)
+{
+	return players[playerId(name)];
 }
 
 function channelId(name)

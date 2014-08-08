@@ -83,7 +83,41 @@ function Channel(id)
 		
 		if (get("#player" + id + "channel" + _this.id) === undefined)
 		{
-			$(_this.players).append("<div id='player%3channel%4'><span style='color:%1;'><b>%2</b></span></div>".args(player.color, player.name, id, _this.id));
+			var div = document.createElement("div");
+			div.id = "player" + id + "channel" + _this.id;
+			div.pname = player.name;
+			div.className = "playerListItem";
+			div.innerHTML = "<span style='color:%1;'><b>%2</b></span>".args(player.color, escapeHTML(player.name));
+			
+			if ($(_this.players).children().length > 0)
+			{
+				var names = [];
+				
+				for (var i = 0; i < _this.playerArray.length; i++)
+				{
+					names.push(players[_this.playerArray[i]].name);
+				}
+				
+				names.sort(function(a, b)
+				{
+					return a.localeCompare(b);
+				});
+				
+				var index = names.indexOf(player.name);
+				
+				if (index === 0)
+				{
+					$(_this.players).prepend(div);
+				}
+				else
+				{
+					$("#player" + playerId(names[index - 1]) + "channel" + _this.id).after(div);
+				}
+			}
+			else
+			{
+				$(_this.players).append(div);
+			}
 		}
 	};
 	

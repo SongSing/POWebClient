@@ -7,7 +7,7 @@ function Tabs(onchange)
 	this.tabRow = document.createElement("div");
 	this.elementContainer = document.createElement("div");
 	
-	this.tabRow.style.cssText = "position:absolute; top:0px; left:0px; right:0px; height:64px; background:#CCCCCC; overflow:auto;";
+	this.tabRow.style.cssText = "position:absolute; top:0px; left:0px; right:0px; height:64px; background:#CCCCCC; overflow:hidden; white-space: nowrap;";
 	this.elementContainer.style.cssText = "position:absolute; top:64px; left:0px; right:0px; bottom:0px;";
 	
 	this.tabElements = {};
@@ -15,6 +15,40 @@ function Tabs(onchange)
 	
 	$(this.container).append(this.tabRow);
 	$(this.container).append(this.elementContainer);
+	
+	$(this.tabRow).append(this.scrollRight);
+	$(this.tabRow).append(this.scrollLeft);
+	
+	var mx = 0;
+	var my = 0;
+	
+	$(this.container).mousemove(function(e)
+	{
+		_this.mx = e.pageX - $(_this.container).position().left;
+		_this.my = e.pageY - $(_this.container).position().top;
+	});
+	
+	setInterval(function()
+	{
+		var x = _this.mx;
+		var y = _this.my;
+		
+		if (y < $(_this.tabRow).height())
+		{
+			var move = 48;
+			var zone = 64;
+			var current = $(_this.tabRow).scrollLeft();
+			
+			if (x < zone)
+			{
+				$(_this.tabRow).scrollLeft(current - move);
+			}
+			else if (x > $(_this.tabRow).width() - zone)
+			{
+				$(_this.tabRow).scrollLeft(current + move);
+			}
+		}
+	}, 100);
 	
 	var currentIndex = -1;
 	
